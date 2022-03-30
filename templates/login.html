@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<body>
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container-fluid" style="min-height:100%">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        {{message}}
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+<h1 style="background-color:teal; border=blue;border-width:10px; border-style:outset">Enter your Login Credentials:</h1>
+    <form method="post" style="background-color:teal; border=green; border-width:5px; border-style:solid">
+        <br>
+        <label for="email">Email:</label>
+        <br>
+        <input type="text" name="email" id="email"
+               placeholder="John.Doe@gmail.com"
+               value="{{ request.form['email'] }}">
+    </input>
+        <br>
+        <label for="password">Password:</label>
+        <br>
+        <input type="text" name="password" id="password"
+               placeholder="J0hnD@e!"
+               value="{{ request.form['password'] }}">
+    </input>
+        <input type="Submit" value="login" name="Login">
+    </form>
+{% endblock %}
+</body>
+<head>
+</html>

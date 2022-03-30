@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<body>
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container-fluid" style="min-height:100%">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        {{message}}
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+<h1 style="background-color:teal; border=blue;border-width:10px; border-style:outset">Vote:</h1>
+    <form method="post" style="background-color:teal; border=green; border-width:5px; border-style:solid">
+        <br>
+        <label for="id">Enter the ID of the post you want to vote/remove a vote for:</label>
+        <br>
+        <input type="text" name="id" id="id"
+               placeholder="John.Doe@gmail.com"
+               value="{{ request.form['id'] }}">
+        <br>
+        <label for="dir">Enter the direction of the vote (1=make a vote of approval & 0 = Remove vote of approval):</label>
+        <br>
+        <input type="text" name="dir" id="dir"
+               placeholder="1"
+               value="{{ request.form['dir'] }}">
+        <input type="Submit" value="vote" name="Vote">
+    </form>
+{% endblock %}
+</body>
+<head>
+</html>

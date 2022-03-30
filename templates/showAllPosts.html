@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color:tomato;">
+<head>
+<body style="background-color:tomato;">
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container-fluid" style="min-height:100%">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        {{message}}
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+<h1 style="background-color:teal; border=blue;border-width:10px; border-style:outset">Posts</h1>
+{% for post in data %}
+<section style="background-color:teal; border=blue;border-width:10px; border-style:outset">
+    <h2>Title: {{post['Post']['title']}}</h2>
+    <h3>Content: {{post['Post']['content']}}</h3>
+    <h6>ID: {{post['Post']['id']}}</h6>
+    <h6>Owner: {{post['Post']['owner']}}</h6>
+    <h6>Approval Votes: {{post['votes']}}</h6>
+    <h6>Created At: {{post['Post']['created_at']}}</h6>
+</section>
+{% endfor %}
+<br>
+<h1 style="background-color:teal; border=blue;border-width:10px; border-style:outset">Edit the search criteria for Posts</h1>
+    <form method="post" style="background-color:teal; border=green; border-width:5px; border-style:solid" action="/">
+        <br>
+        <label for="limit">Limit:</label>
+        <br>
+        <input type="text" name="limit" id="limit"
+               placeholder="10"
+               value="{{ request.form['limit'] }}">
+    </input>
+        <br>
+        <label for="skip">Skip:</label>
+        <br>
+        <input type="text" name="skip" id="skip"
+               placeholder="0"
+               value="{{ request.form['skip'] }}">
+    </input>
+        <br>
+        <label for="search">Search:</label>
+        <br>
+        <input type="text" name="search" id="search"
+               placeholder=""
+               value="{{ request.form['search'] }}">
+    </input>
+        <input type="submit" value="submit" name="submit">
+    </form>
+{% endblock %}
+</body>
+<head>
+</html>
