@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, url_for, flash, redirect
 import requests
+from requests_oauthlib import OAuth2Session
 from flask_bootstrap import Bootstrap
 from flask_nav import Nav
 from flask_nav.elements import *
@@ -23,6 +24,7 @@ security_auth_code = ''
 postsToDisplay = []
 postFilters = None
 auth = None
+session = requests.Session()
 @app.route('/', methods=('GET', 'POST'))
 def showAllPosts():
     global postFilters
@@ -41,9 +43,9 @@ def showAllPosts():
         postFilters = {'limit': limit, 'skip': skip, 'search': search}
         return redirect(url_for('showAllPosts'))
     if postFilters is None:
-        notFormattedPostsToDisplay = requests.get(url=rootAPIURL+'/posts')
+        notFormattedPostsToDisplay = session.get(url=rootAPIURL+'/posts')
     else:
-        notFormattedPostsToDisplay = requests.get(url=rootAPIURL+'/posts', params=postFilters)
+        notFormattedPostsToDisplay = session.get(url=rootAPIURL+'/posts', params=postFilters)
         postFilters = None
     ThePostsToDisplay = notFormattedPostsToDisplay.json()
     data=ThePostsToDisplay
@@ -58,13 +60,12 @@ def login():
         print('hi')
         email = request.form['email']
         password = request.form['password']
-        session = requests.Session()
         response = session.post(url=rootAPIURL+'/login', data={"username": email, "password":password})
-        session.close()
         try:
             if not(int(response.status_code) - 200 < 100): raise Exception('This credential is not good')
             #auth = OAuth2(token=response.json())
             security_auth_code = response.json()['access_token']
+            session.auth = (email, password)
             print(response.json())
             print('hello')
             flash('Logged in successfully')
@@ -75,7 +76,7 @@ def login():
 
 @app.route('/latest', methods=['GET'])
 def latest():
-    result = requests.get(url=rootAPIURL+'/posts/latest')
+    result = session.get(url=rootAPIURL+'/posts/latest')
     return render_template('latestPost.html', data=[result.json()])
 
 @app.route('/aPost', methods=('GET', 'POST'))
@@ -84,7 +85,7 @@ def getAPost():
     if request.method == 'POST':
         try:
             THEid = int(request.form['ID'])
-            returned = requests.get(url=rootAPIURL+f"/posts/{THEid}")
+            returned = session.get(url=rootAPIURL+f"/posts/{THEid}")
             if returned.status_code != 200:
                 flash('A post with this ID could not be found')
                 return redirect(url_for('getAPost'))
@@ -95,7 +96,7 @@ def getAPost():
     data = postsToDisplay
     postsToDisplay = None
     if not data:
-        data = requests.get(url=rootAPIURL+'/posts/2').json()
+        data = session.get(url=rootAPIURL+'/posts/2').json()
     print([data])
     return render_template('showAPost.html', data=[data])
 
@@ -112,13 +113,14 @@ def vote():
         except Exception:
             flash('Please ensure that the vote direction is an integer and that the post ID is an integer!!!')
             return redirect(url_for('vote'))
-        headers = CaseInsensitiveDict()
-        headers["Accept"] = "application/json"
-        headers["Authorize"] = f"Bearer {security_auth_code}"
-        headers["Authenticate"] = f"Bearer {security_auth_code}"
-        headers["Token"] = f"Bearer {security_auth_code}"
-        session = requests.Session()
-        returned = session.post(url=rootAPIURL+'/vote', params={"post_id": post_ID, "dir": vote_dir, "token": security_auth_code}, headers=headers, data={"token": security_auth_code, 'bearer': security_auth_code, "authorize": security_auth_code, "authenticate": security_auth_code}, )#auth=auth)
+        headers = {'Authorization': "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE2NDg2Nzk0NTd9.ECAb0mxzyBXWLVvNRGhNur11722YHJSX-DXPC6GlRMM"}
+        #headers["Accept"] = "application/json"
+        #headers["Authorize"] = f"Bearer {security_auth_code}"
+        #headers["Authenticate"] = f"Bearer {security_auth_code}"
+        #headers["Token"] = f"Bearer {security_auth_code}"
+        session.headers = headers
+        print('Cookies:', session.cookies)
+        returned = session.post(url=rootAPIURL+'/vote', params={"post_id": post_ID, "dir": vote_dir})
         print(returned.status_code, headers, returned.json(), security_auth_code)
         if int(returned.status_code) == 201:
             flash('Voted successfully!')
