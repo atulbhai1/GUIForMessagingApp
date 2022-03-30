@@ -5,13 +5,15 @@ from flask_nav import Nav
 from flask_nav.elements import *
 from dominate.tags import img
 from requests.structures import CaseInsensitiveDict
+from requests_oauthlib import OAuth2
 rootAPIURL = 'https://messagingappfastapi-atul.herokuapp.com'
 logo = img(src="./static/img/logo.png" , height="50", width="200", style="margin-top:-15px")
 topbar = Navbar(logo,
                 View('View All Posts', 'showAllPosts'),
                 View('Login', 'login'),
                 View('Most Recent Message', 'latest'),
-                View('Find a specific post by the ID', 'getAPost'))
+                View('Find a specific post by the ID', 'getAPost'),
+                View('Vote', 'vote'))
 nav = Nav()
 nav.register_element('top', topbar)
 app = Flask(__name__)
@@ -20,6 +22,7 @@ Bootstrap(app)
 security_auth_code = ''
 postsToDisplay = []
 postFilters = None
+auth = None
 @app.route('/', methods=('GET', 'POST'))
 def showAllPosts():
     global postFilters
@@ -48,7 +51,7 @@ def showAllPosts():
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
-    global security_auth_code
+    global security_auth_code, auth
     print('hi')
     print(request.method)
     if request.method == 'POST':
@@ -59,6 +62,8 @@ def login():
         response = session.post(url=rootAPIURL+'/login', data={"username": email, "password":password})
         session.close()
         try:
+            if not(int(response.status_code) - 200 < 100): raise Exception('This credential is not good')
+            #auth = OAuth2(token=response.json())
             security_auth_code = response.json()['access_token']
             print(response.json())
             print('hello')
@@ -96,7 +101,7 @@ def getAPost():
 
 @app.route('/vote', methods=('GET', 'POST'))
 def vote():
-    global security_auth_code
+    global security_auth_code, auth
     if request.method == 'POST':
         if security_auth_code == '':
             flash('You have to be logged in to vote')
@@ -113,7 +118,7 @@ def vote():
         headers["Authenticate"] = f"Bearer {security_auth_code}"
         headers["Token"] = f"Bearer {security_auth_code}"
         session = requests.Session()
-        returned = session.post(url=rootAPIURL+'/vote', params={"post_id": post_ID, "dir": vote_dir, "token": security_auth_code}, headers=headers, data={"token": security_auth_code, 'bearer': security_auth_code, "authorize": security_auth_code, "authenticate": security_auth_code})
+        returned = session.post(url=rootAPIURL+'/vote', params={"post_id": post_ID, "dir": vote_dir, "token": security_auth_code}, headers=headers, data={"token": security_auth_code, 'bearer': security_auth_code, "authorize": security_auth_code, "authenticate": security_auth_code}, )#auth=auth)
         print(returned.status_code, headers, returned.json(), security_auth_code)
         if int(returned.status_code) == 201:
             flash('Voted successfully!')
