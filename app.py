@@ -113,7 +113,7 @@ def vote():
         except Exception:
             flash('Please ensure that the vote direction is an integer and that the post ID is an integer!!!')
             return redirect(url_for('vote'))
-        headers = {'Authorization': "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE2NDg2Nzk0NTd9.ECAb0mxzyBXWLVvNRGhNur11722YHJSX-DXPC6GlRMM"}
+        headers = {'Authorization': "Bearer "+security_auth_code}
         #headers["Accept"] = "application/json"
         #headers["Authorize"] = f"Bearer {security_auth_code}"
         #headers["Authenticate"] = f"Bearer {security_auth_code}"
