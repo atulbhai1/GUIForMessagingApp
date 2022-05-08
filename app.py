@@ -8,17 +8,18 @@ from dominate.tags import img
 from requests.structures import CaseInsensitiveDict
 from requests_oauthlib import OAuth2
 rootAPIURL = 'https://messagingappfastapi-atul.herokuapp.com'
-logo = img(src="./static/img/logo.png" , height="50", width="200", style="margin-top:-15px")
+logo = img(src="/static/img/logo.png" , height="50", width="200", style="margin-top:-15px")
+p = []
 topbar = Navbar(logo,
                 View('View All Posts', 'showAllPosts'),
                 View('Login', 'login'),
                 View('Most Recent Message', 'latest'),
                 View('Find a specific post by the ID', 'getAPost'),
-                View('Vote', 'vote'))
+                View('Vote', 'vote'))#Issue with voting auth
 nav = Nav()
 nav.register_element('top', topbar)
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '17bb05ad20765f49322692652f2bf6d761bf9wn29dm39aso'
+app.config['SECRET_KEY'] = '17bb05ad20765f49322692652f2bfefa61bf9wn29dm39aso'
 Bootstrap(app)
 security_auth_code = ''
 postsToDisplay = []
@@ -66,6 +67,7 @@ def login():
             #auth = OAuth2(token=response.json())
             security_auth_code = response.json()['access_token']
             session.auth = (email, password)
+
             print(response.json())
             print('hello')
             flash('Logged in successfully')
@@ -120,7 +122,7 @@ def vote():
         #headers["Token"] = f"Bearer {security_auth_code}"
         session.headers = headers
         print('Cookies:', session.cookies)
-        returned = session.post(url=rootAPIURL+'/vote', params={"post_id": post_ID, "dir": vote_dir})
+        returned = session.post(url=rootAPIURL+'/vote', params={"post_id": post_ID, "dir": vote_dir}, headers=headers)
         print(returned.status_code, headers, returned.json(), security_auth_code)
         if int(returned.status_code) == 201:
             flash('Voted successfully!')
@@ -134,3 +136,4 @@ def vote():
     return render_template('vote.html')
 nav.init_app(app)
 app.run()
+
